@@ -1,0 +1,36 @@
+name: CMake
+
+on: [push, pull_request]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, macos-latest, windows-latest, windows-2019]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      run: ctest -C ${{env.BUILD_TYPE}}
+
+    - name: Configure CMake with C++20
+      run: cmake -B ${{github.workspace}}/build_20 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_CXX_STANDARD=20
+
+    - name: Build with C++20
+      run: cmake --build ${{github.workspace}}/build_20 --config ${{env.BUILD_TYPE}}
+
+    - name: Test with C++20
+      working-directory: ${{github.workspace}}/build_20
+      run: ctest -C ${{env.BUILD_TYPE}}
