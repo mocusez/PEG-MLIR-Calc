@@ -113,3 +113,10 @@ define noundef i32 @main() local_unnamed_addr #0 {
 attributes #0 = { mustprogress nofree norecurse nosync nounwind willreturn memory(none) }
 ```
 
+
+
+## Run on JIT
+
+input: `50+5`
+
+Output: `55`

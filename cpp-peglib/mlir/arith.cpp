@@ -15,9 +15,10 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/ExecutionEngine/Orc/JITTargetMachineBuilder.h"
+#include "llvm/ExecutionEngine/Orc/LLJIT.h"
 #include "llvm/IR/Module.h"
 #include "llvm/Support/CommandLine.h"
-#include "llvm/Support/ErrorOr.h"
+#include "llvm/Support/Error.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/SourceMgr.h"
 #include "llvm/Support/TargetSelect.h"
@@ -30,8 +31,9 @@ bool EnableInlinePass = true && EnablePass;
 bool EnableLLVMPass = true && EnablePass;
 bool DumpLLVMIR = true;
 bool enableOpt = true;
+bool runJIT = true;
 
-int dumpLLVMIR(mlir::ModuleOp module) {
+int dumpLLVMIR(mlir::ModuleOp module,bool enableJIT=false) {
   // Register the translation to LLVM IR with the MLIR context.
   mlir::registerBuiltinDialectTranslation(*module->getContext());
   mlir::registerLLVMDialectTranslation(*module->getContext());
@@ -70,8 +72,18 @@ int dumpLLVMIR(mlir::ModuleOp module) {
     llvm::errs() << "Failed to optimize LLVM IR " << err << "\n";
     return -1;
   }
-  llvm::outs() << *llvmModule << "\n";
-  return 0;
+
+    if(enableJIT){
+        llvm::ExitOnError ExitOnErr;
+        auto J = ExitOnErr(llvm::orc::LLJITBuilder().create());
+        ExitOnErr(J->addIRModule(llvm::orc::ThreadSafeModule(std::move(llvmModule), std::make_unique<llvm::LLVMContext>())));
+        auto MainSymbol = ExitOnErr(J->lookup("main"));
+        auto *main = MainSymbol.toPtr<int()>();
+        llvm::outs() << main() << "\n";
+    } else{
+        llvm::outs() << *llvmModule << "\n";
+    }
+    return 0;
 }
 
 
@@ -140,8 +152,9 @@ int arith_work(int first,int second,ArithOp type) {
         }
     }
 
-    if(EnableLLVMPass && DumpLLVMIR){
-        dumpLLVMIR(*module);
+    if(EnableLLVMPass){
+        if(runJIT) dumpLLVMIR(*module,true);
+        else if(DumpLLVMIR) dumpLLVMIR(*module);
     } else {
         module->print(llvm::outs());
     }
