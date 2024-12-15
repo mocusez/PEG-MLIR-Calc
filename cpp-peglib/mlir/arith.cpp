@@ -7,6 +7,8 @@
 #include "mlir/Pass/PassManager.h"
 #include "mlir/Transforms/Passes.h"
 
+#include "llvm/Support/raw_ostream.h"
+
 #include "arith.h"
 
 bool EnablePass = true;
@@ -73,6 +75,6 @@ int arith_work(int first,int second,ArithOp type) {
     }
     
 
-    module.dump();
+    module.print(llvm::outs());
     return 0;
 }
