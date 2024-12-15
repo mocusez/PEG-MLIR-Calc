@@ -2,9 +2,15 @@
 
 Inspire By the https://github.com/yhirose/cpp-peglib
 
+And reference work from [MLIR Toy Dialect](https://github.com/llvm/llvm-project/tree/main/mlir/docs/Tutorials/Toy)
+
 ## How to use
 
-Setup CMake environment on Debian-sid with MLIR Environment
+```
+git clone https://github.com/mocusez/PEG-MLIR-Calc
+```
+
+Setup CMake  MLIR environment on Debian-sid with MLIR Environment  -> [CMake_MLIR_Toy](https://github.com/mocusez/CMake_MLIR_Toy)
 
 then
 
