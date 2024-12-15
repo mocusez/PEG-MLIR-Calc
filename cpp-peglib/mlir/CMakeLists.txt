@@ -64,4 +64,7 @@ target_link_libraries(mlir-calc
     MLIRArithDialect
     MLIRPass
     MLIRTransforms
+
+    MLIRBuiltinToLLVMIRTranslation
+    MLIRExecutionEngine
     )
