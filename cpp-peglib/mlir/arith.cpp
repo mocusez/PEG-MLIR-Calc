@@ -4,7 +4,13 @@
 #include "mlir/IR/BuiltinTypes.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"
+#include "mlir/Pass/PassManager.h"
+#include "mlir/Transforms/Passes.h"
+
 #include "arith.h"
+
+bool EnablePass = true;
+bool EnableInlinePass = true;
 
 int arith_work(int first,int second,ArithOp type) {
   mlir::MLIRContext context;
@@ -51,6 +57,22 @@ int arith_work(int first,int second,ArithOp type) {
       builder.getUnknownLoc(), 
       mlir::ValueRange{result}); 
 
-  module.dump();
-  return 0;
+
+    if(EnablePass){
+        mlir::PassManager pm(&context);
+        pm.addPass(mlir::createCSEPass());
+        pm.addPass(mlir::createCanonicalizerPass());
+
+        if(EnableInlinePass){
+            pm.addPass(mlir::createInlinerPass());
+        }
+        if (mlir::failed(pm.run(module))) {
+            llvm::errs() << "Failed to lower to LLVM.\n";
+            return 1;
+        }
+    }
+    
+
+    module.dump();
+    return 0;
 }

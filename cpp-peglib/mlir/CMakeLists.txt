@@ -49,7 +49,6 @@ set(LLVM_LINK_COMPONENTS
   )
 add_executable(mlir-calc calc.cc arith.h arith.cpp)
 target_include_directories(mlir-calc PRIVATE ..)
-# target_link_libraries(mlir-calc ${add_link_deps})
 target_link_libraries(mlir-calc
   PRIVATE
   ${add_link_deps}
@@ -57,4 +56,6 @@ target_link_libraries(mlir-calc
     MLIRIR
     MLIRFuncDialect
     MLIRArithDialect
-    MLIRSupport)
+    MLIRPass
+    MLIRTransforms
+    )
