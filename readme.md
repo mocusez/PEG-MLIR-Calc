@@ -2,8 +2,6 @@
 
 Inspire By the https://github.com/yhirose/cpp-peglib
 
-🚨🚨**Warning: Work in Progress**🚨🚨
-
 ## How to use
 
 Setup CMake environment on Debian-sid with MLIR Environment
@@ -55,6 +53,40 @@ module {
     %c5_i32 = arith.constant 5 : i32
     %0 = arith.addi %c50_i32, %c5_i32 : i32
     return %0 : i32
+  }
+}
+```
+
+
+
+## Use Passes
+
+input: `50+5`
+
+output:
+
+```
+module {
+  func.func @main() -> i32 {
+    %c55_i32 = arith.constant 55 : i32
+    return %c55_i32 : i32
+  }
+}
+```
+
+
+
+## Lower to LLVM Dialect
+
+input: `50+5`
+
+output:
+
+```
+module {
+  llvm.func @main() -> i32 {
+    %0 = llvm.mlir.constant(55 : i32) : i32
+    llvm.return %0 : i32
   }
 }
 ```
