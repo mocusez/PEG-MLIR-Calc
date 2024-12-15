@@ -10,9 +10,11 @@
 #include "llvm/Support/raw_ostream.h"
 
 #include "arith.h"
+#include "Passes.h"
 
 bool EnablePass = true;
 bool EnableInlinePass = true;
+bool EnableLLVMPass = true;
 
 int arith_work(int first,int second,ArithOp type) {
   mlir::MLIRContext context;
@@ -68,6 +70,11 @@ int arith_work(int first,int second,ArithOp type) {
         if(EnableInlinePass){
             pm.addPass(mlir::createInlinerPass());
         }
+        
+        if(EnableLLVMPass) {
+            pm.addPass(mlir::toy::createLowerToLLVMPass());
+        }
+
         if (mlir::failed(pm.run(module))) {
             llvm::errs() << "Failed to lower to LLVM.\n";
             return 1;

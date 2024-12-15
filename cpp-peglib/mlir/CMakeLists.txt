@@ -47,11 +47,17 @@ add_definitions(${LLVM_DEFINITIONS})
 set(LLVM_LINK_COMPONENTS
   Support
   )
-add_executable(mlir-calc calc.cc arith.h arith.cpp)
+add_executable(mlir-calc calc.cc arith.h arith.cpp LowerToLLVM.cpp Passes.h)
 target_include_directories(mlir-calc PRIVATE ..)
+
+get_property(dialect_libs GLOBAL PROPERTY MLIR_DIALECT_LIBS)
+get_property(conversion_libs GLOBAL PROPERTY MLIR_CONVERSION_LIBS)
+
 target_link_libraries(mlir-calc
   PRIVATE
   ${add_link_deps}
+  ${dialect_libs}
+  ${conversion_libs}
     MLIRSupport
     MLIRIR
     MLIRFuncDialect
