@@ -30,6 +30,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <xmmintrin.h> // For __m128i
 
 bool EnablePass = true;
 bool EnableInlinePass = true && EnablePass;
@@ -38,7 +39,7 @@ bool DumpLLVMIR = true;
 bool enableOpt = true;
 bool runJIT = true;
 
-int dumpLLVMIR(mlir::ModuleOp module,bool enableJIT=false) {
+int dumpLLVMIR(mlir::ModuleOp module,bool enableJIT=false,bool simd_output=false) {
   // Register the translation to LLVM IR with the MLIR context.
   mlir::registerBuiltinDialectTranslation(*module->getContext());
   mlir::registerLLVMDialectTranslation(*module->getContext());
@@ -83,8 +84,30 @@ int dumpLLVMIR(mlir::ModuleOp module,bool enableJIT=false) {
         auto J = ExitOnErr(llvm::orc::LLJITBuilder().create());
         ExitOnErr(J->addIRModule(llvm::orc::ThreadSafeModule(std::move(llvmModule), std::make_unique<llvm::LLVMContext>())));
         auto MainSymbol = ExitOnErr(J->lookup("main"));
-        auto *main = MainSymbol.toPtr<int()>();
-        llvm::outs() << main() << "\n";
+        auto normalJIT = [&MainSymbol](){
+            auto *main = MainSymbol.toPtr<int()>();
+            llvm::outs() << main() << "\n";
+        };
+        auto simdJIT = [&MainSymbol](){
+            using VectorFnType = __m128i (*)();
+            auto *mainFn = MainSymbol.toPtr<VectorFnType>();
+            const size_t size = 4;
+            int32_t result[size];
+            __m128i vec_result = mainFn();
+            _mm_store_si128((__m128i*)result, vec_result);
+            
+            llvm::outs() << "[";
+            for(size_t i = 0; i < size; i++) {
+                llvm::outs() << result[i];
+                if (i < size - 1) llvm::outs() << ", ";
+            }
+            llvm::outs() << "]\n";
+        };
+        if(simd_output){
+            simdJIT();
+        } else {
+            normalJIT();
+        }
     } else{
         llvm::outs() << *llvmModule << "\n";
     }
@@ -162,7 +185,8 @@ int simd_work(const std::vector<int> &values1,const std::vector<int> &values2){
     }
 
     if(EnableLLVMPass){
-        dumpLLVMIR(*module);
+        if(runJIT) dumpLLVMIR(*module,true,true);
+        else if(DumpLLVMIR) dumpLLVMIR(*module);
     } else {
         module->print(llvm::outs());
     }
