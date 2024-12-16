@@ -2,8 +2,10 @@
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/BuiltinTypes.h"
+#include "mlir/IR/Value.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"
+#include "mlir/Dialect/Vector/IR/VectorOps.h"
 #include "mlir/Pass/PassManager.h"
 #include "mlir/Transforms/Passes.h"
 #include "mlir/Target/LLVMIR/Dialect/Builtin/BuiltinToLLVMIRTranslation.h"
@@ -25,6 +27,9 @@
 
 #include "arith.h"
 #include "Passes.h"
+
+#include <vector>
+#include <algorithm>
 
 bool EnablePass = true;
 bool EnableInlinePass = true && EnablePass;
@@ -86,6 +91,83 @@ int dumpLLVMIR(mlir::ModuleOp module,bool enableJIT=false) {
     return 0;
 }
 
+int simd_work(const std::vector<int> &values1,const std::vector<int> &values2){
+    mlir::MLIRContext context;
+    context.loadDialect<mlir::func::FuncDialect>();
+    context.loadDialect<mlir::vector::VectorDialect>();
+    context.loadDialect<mlir::arith::ArithDialect>(); 
+
+    mlir::OpBuilder builder(&context);
+    mlir::OwningOpRef<mlir::ModuleOp> module = mlir::ModuleOp::create(builder.getUnknownLoc());
+
+    if(values1.size() != values2.size()){
+        llvm::errs() << "Wrong Vector Caculator!" << "\n";
+    }
+    auto vectorType = mlir::VectorType::get(
+        {static_cast<int64_t>(values1.size())}, 
+        builder.getIntegerType(32));
+
+    auto funcType = builder.getFunctionType({}, {vectorType});
+    auto func = builder.create<mlir::func::FuncOp>(
+        builder.getUnknownLoc(), "main", funcType);
+
+    module->push_back(func);
+    auto entryBlock = func.addEntryBlock();
+    builder.setInsertionPointToStart(entryBlock);
+
+    auto stdVector2Value = [&builder,&vectorType](const std::vector<int> &values) { 
+        std::vector<mlir::Attribute> attrs(values.size());
+        auto trans = [&builder](int val) { 
+            return builder.getI32IntegerAttr(val);
+        };
+        std::transform(values.begin(), values.end(), attrs.begin(), trans);
+        return mlir::DenseElementsAttr::get(vectorType, attrs);
+    };
+
+    mlir::Value vecConstant[] = {
+        builder.create<mlir::arith::ConstantOp>( // Changed to arith::ConstantOp
+            builder.getUnknownLoc(),
+            vectorType,
+            stdVector2Value(values1)),
+        builder.create<mlir::arith::ConstantOp>( // Changed to arith::ConstantOp
+            builder.getUnknownLoc(),
+            vectorType,
+            stdVector2Value(values2))
+    };
+
+    mlir::Value result = builder.create<mlir::arith::AddIOp>(
+        builder.getUnknownLoc(), vecConstant[0], vecConstant[1]);
+
+    builder.create<mlir::func::ReturnOp>(
+        builder.getUnknownLoc(), 
+        mlir::ValueRange{result}); 
+
+    if(EnablePass){
+        mlir::PassManager pm(&context);
+        pm.addPass(mlir::createCSEPass());
+        pm.addPass(mlir::createCanonicalizerPass());
+
+        if(EnableInlinePass){
+            pm.addPass(mlir::createInlinerPass());
+        }
+        
+        if(EnableLLVMPass) {
+            pm.addPass(mlir::toy::createLowerToLLVMPass());
+        }
+
+        if (mlir::failed(pm.run(*module))) {
+            llvm::errs() << "Failed to lower to LLVM.\n";
+            return 1;
+        }
+    }
+
+    if(EnableLLVMPass){
+        dumpLLVMIR(*module);
+    } else {
+        module->print(llvm::outs());
+    }
+    return 0;
+}
 
 int arith_work(int first,int second,ArithOp type) {
   mlir::MLIRContext context;

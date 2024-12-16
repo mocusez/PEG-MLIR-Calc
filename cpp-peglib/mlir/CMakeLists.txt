@@ -62,6 +62,7 @@ target_link_libraries(mlir-calc
     MLIRIR
     MLIRFuncDialect
     MLIRArithDialect
+    MLIRVectorDialect
     MLIRPass
     MLIRTransforms
 
