@@ -63,6 +63,23 @@ module {
 }
 ```
 
+### Vector Add(SIMD)
+
+input: `[1,2,3,6]+[2,3,8,5]`
+
+output:
+
+```
+module {
+  func.func @main() -> vector<4xi32> {
+    %cst = arith.constant dense<[1, 2, 3, 6]> : vector<4xi32>
+    %cst_0 = arith.constant dense<[2, 3, 8, 5]> : vector<4xi32>
+    %0 = arith.addi %cst, %cst_0 : vector<4xi32>
+    return %0 : vector<4xi32>
+  }
+}
+```
+
 
 
 ## Use Passes
@@ -101,9 +118,13 @@ module {
 
 ## Output to LLVM IR
 
+Just for reference, test at x86_64 Linux
+
+
+
 input: `50+5`
 
-output: (Just for reference)
+output: 
 
 ```llvm IR
 ; ModuleID = 'LLVMDialectModule'
@@ -121,8 +142,36 @@ attributes #0 = { mustprogress nofree norecurse nosync nounwind willreturn memor
 
 
 
+input: `[1,2,3,6]+[2,3,8,5]`
+
+output: 
+
+```
+; ModuleID = 'LLVMDialectModule'
+source_filename = "LLVMDialectModule"
+target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-pc-linux-gnu"
+
+; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn memory(none)
+define noundef <4 x i32> @main() local_unnamed_addr #0 {
+  ret <4 x i32> <i32 3, i32 5, i32 11, i32 11>
+}
+
+attributes #0 = { mustprogress nofree norecurse nosync nounwind willreturn memory(none) }
+```
+
+
+
 ## Run on JIT
+
+Just for reference, test at x86_64 Linux
 
 input: `50+5`
 
-Output: `55`
+output: `55`
+
+
+
+input: `[1,2,3,6]+[2,3,8,5]`
+
+output: `[3, 5, 11, 11]`
