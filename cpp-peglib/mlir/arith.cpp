@@ -16,6 +16,7 @@
 
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/ADT/StringRef.h"
+#include "llvm/ADT/ArrayRef.h"
 #include "llvm/ExecutionEngine/Orc/JITTargetMachineBuilder.h"
 #include "llvm/ExecutionEngine/Orc/LLJIT.h"
 #include "llvm/IR/Module.h"
@@ -29,7 +30,6 @@
 #include "Passes.h"
 
 #include <vector>
-#include <algorithm>
 #include <xmmintrin.h> // For __m128i
 
 bool EnablePass = true;
@@ -138,13 +138,11 @@ int simd_work(const std::vector<int> &values1,const std::vector<int> &values2){
     auto entryBlock = func.addEntryBlock();
     builder.setInsertionPointToStart(entryBlock);
 
-    auto stdVector2Value = [&builder,&vectorType](const std::vector<int> &values) { 
-        std::vector<mlir::Attribute> attrs(values.size());
-        auto trans = [&builder](int val) { 
-            return builder.getI32IntegerAttr(val);
-        };
-        std::transform(values.begin(), values.end(), attrs.begin(), trans);
-        return mlir::DenseElementsAttr::get(vectorType, attrs);
+    auto stdVector2Value = [&vectorType](const std::vector<int> &values) {
+        return mlir::DenseElementsAttr::get(
+            vectorType,
+            llvm::ArrayRef<int32_t>(values)
+        );
     };
 
     mlir::Value vecConstant[] = {
