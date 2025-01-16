@@ -4,6 +4,12 @@ Inspire By the https://github.com/yhirose/cpp-peglib
 
 And reference work from [MLIR Toy Dialect](https://github.com/llvm/llvm-project/tree/main/mlir/docs/Tutorials/Toy)
 
+## Support Architecture
+
+CPU: AMD64, RISCV64(Not Support SIMD Right Now)
+
+OS: Linux
+
 ## How to use
 
 ```
@@ -12,11 +18,19 @@ git clone https://github.com/mocusez/PEG-MLIR-Calc
 
 Setup CMake  MLIR environment on Debian-sid with MLIR Environment  -> [CMake_MLIR_Toy](https://github.com/mocusez/CMake_MLIR_Toy)
 
+```
+mkdir build
+cmake -B build -DCMAKE_BUILD_TYPE:STRING=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/clang-18 -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang++-18 --no-warn-unused-cli -G Ninja
+cmake  --build build --config Debug --target mlir-calc
+```
+
 then
 
-```
-echo "30*2" >> input.txt
-./build/cpp-peglib/mlir/mlir-calc
+```bash
+cd test
+chmod +x add.sh
+./add.sh
+# It will show 55
 ```
 
 ## Result

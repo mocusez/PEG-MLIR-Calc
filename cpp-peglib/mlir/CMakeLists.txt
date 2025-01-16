@@ -47,7 +47,12 @@ add_definitions(${LLVM_DEFINITIONS})
 set(LLVM_LINK_COMPONENTS
   Support
   )
-add_executable(mlir-calc calc.cc arith.h arith.cpp LowerToLLVM.cpp Passes.h)
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
+  message(STATUS "Building for x86_64 architecture")
+  add_executable(mlir-calc calc.cc arith.h arith.cpp LowerToLLVM.cpp Passes.h)
+else()
+  add_executable(mlir-calc calc.cc arith.h arith_no_simd.cpp LowerToLLVM.cpp Passes.h)
+endif()
 target_include_directories(mlir-calc PRIVATE ..)
 
 get_property(dialect_libs GLOBAL PROPERTY MLIR_DIALECT_LIBS)
