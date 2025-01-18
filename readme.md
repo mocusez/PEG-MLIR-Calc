@@ -6,19 +6,19 @@ And reference work from [MLIR Toy Dialect](https://github.com/llvm/llvm-project/
 
 ## Support Architecture
 
-CPU: AMD64, RISCV64(Not Support SIMD Right Now)
+CPU: AMD64, RISCV64, ARM64
 
 OS: Linux
 
 ## How to use
 
-```
+```bash
 git clone https://github.com/mocusez/PEG-MLIR-Calc
 ```
 
 Setup CMake  MLIR environment on Debian-sid with MLIR Environment  -> [CMake_MLIR_Toy](https://github.com/mocusez/CMake_MLIR_Toy)
 
-```
+```bash
 mkdir build
 cmake -B build -DCMAKE_BUILD_TYPE:STRING=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/clang-18 -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang++-18 --no-warn-unused-cli -G Ninja
 cmake  --build build --config Debug --target mlir-calc
