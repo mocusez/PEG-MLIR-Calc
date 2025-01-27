@@ -6,9 +6,11 @@ And reference work from [MLIR Toy Dialect](https://github.com/llvm/llvm-project/
 
 ## Support Architecture
 
-CPU: AMD64, RISCV64, ARM64
+Linux/AMD64: [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/mocusez/PEG-MLIR-Calc/build(AMD64).yml?branch=main&label=ci&logo=github&style=flat-square)](https://github.com/mocusez/PEG-MLIR-Calc/actions?workflow=build(AMD64))
 
-OS: Linux
+Linux/ARM64: [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/mocusez/PEG-MLIR-Calc/build(ARM64).yml?branch=main&label=ci&logo=github&style=flat-square)](https://github.com/mocusez/PEG-MLIR-Calc/actions?workflow=build(ARM64))
+
+Linux/RISCV64
 
 ## How to use
 
