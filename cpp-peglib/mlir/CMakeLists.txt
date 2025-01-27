@@ -18,9 +18,7 @@ project(mlir-hello LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard to conform to")
 
-set(LLVM_DIR /usr/lib/llvm-18/lib/cmake/llvm/)
 find_package(LLVM REQUIRED CONFIG)
-set(MLIR_DIR /usr/lib/llvm-18/lib/cmake/mlir/)
 find_package(MLIR REQUIRED CONFIG)
 
 message(STATUS "Using MLIRConfig.cmake in: ${MLIR_DIR}")
@@ -49,7 +47,7 @@ set(LLVM_LINK_COMPONENTS
   )
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
   message(STATUS "Building for x86_64 architecture")
-  add_executable(mlir-calc calc.cc arith.h arith.cpp LowerToLLVM.cpp Passes.h)
+  add_executable(mlir-calc calc.cc arith.h arith_general_simd.cpp LowerToLLVM.cpp Passes.h)
 else()
   add_executable(mlir-calc calc.cc arith.h arith_general_simd.cpp LowerToLLVM.cpp Passes.h)
 endif()
